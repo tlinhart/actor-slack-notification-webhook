@@ -1,0 +1,43 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: 16.x
+      - name: Cache packages
+        uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install dependencies
+        run: |
+          npm ci --include=dev
+      - name: Lint with ESLint
+        run: |
+          npm run lint
+  deploy:
+    name: Deploy actor
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Apify CLI
+        run: |
+          npm install apify-cli -g
+      - name: Log in to Apify account
+        run: |
+          apify login --token=${{ secrets.APIFY_TOKEN }}
+      - name: Deploy actor to Apify platform
+        run: |
+          apify push

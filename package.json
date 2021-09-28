@@ -1,0 +1,30 @@
+{
+  "name": "slack-notification-webhook",
+  "version": "0.0.1",
+  "description": "Apify actor for sending Slack notifications via webhooks",
+  "dependencies": {
+    "@slack/webhook": "^6.0.0",
+    "apify": "^2.0.7",
+    "deepdash": "^5.3.9"
+  },
+  "devDependencies": {
+    "eslint": "^7.32.0",
+    "eslint-config-prettier": "^8.3.0",
+    "eslint-plugin-prettier": "^4.0.0",
+    "prettier": "^2.4.1"
+  },
+  "scripts": {
+    "start": "node src/main.js",
+    "lint": "npx eslint src/.* --ext js",
+    "lint:fix": "npx eslint --fix src/.* --ext js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/tlinhart/actor-slack-notification-webhook"
+  },
+  "author": {
+    "name": "Tomáš Linhart",
+    "email": "pasmen@gmail.com"
+  },
+  "license": "MIT"
+}
