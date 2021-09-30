@@ -57,7 +57,7 @@ template and also variables provided by this actor:
 
 - `actor` – object returned by the [Get actor](https://docs.apify.com/api/v2#/reference/actors/actor-object/get-actor) endpoint
 - `task` – object returned by the [Get task](https://docs.apify.com/api/v2#/reference/actor-tasks/task-object/get-task) endpoint
-- `runLog` actor run log returned by the [Get log](https://docs.apify.com/api/v2#/reference/logs/log/get-log) endpoint
+- `runLog` – actor run log returned by the [Get log](https://docs.apify.com/api/v2#/reference/logs/log/get-log) endpoint
 
 By default, the message contains information about the actor (and the task
 if available) and its run together with the last 15 lines of the run log.
