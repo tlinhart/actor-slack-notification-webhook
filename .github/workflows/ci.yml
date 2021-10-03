@@ -2,7 +2,7 @@ name: CI
 on:
   push:
     branches:
-      - main
+      - '**'
 jobs:
   test:
     name: Run tests
@@ -29,6 +29,7 @@ jobs:
   deploy:
     name: Deploy actor
     needs: test
+    if: ${{ !failure() && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
