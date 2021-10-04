@@ -33,12 +33,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Install Apify CLI
+      - name: Determine build parameters
+        id: build_parameters
         run: |
-          npm install apify-cli -g
-      - name: Log in to Apify account
-        run: |
-          apify login --token=${{ secrets.APIFY_TOKEN }}
-      - name: Deploy actor to Apify platform
-        run: |
-          apify push
+          version=$(jq '.version' apify.json)
+          echo "::set-output name=version::$version"
+      - name: Build actor
+        uses: fjogeleit/http-request-action@master
+        with:
+          url: "https://api.apify.com/v2/acts/tlinhart~slack-notification-webhook/builds?\
+                token=${{ secrets.APIFY_TOKEN }}&version=${{ steps.build_parameters.outputs.version }}&\
+                waitForFinish=120"
+          method: 'POST'
