@@ -36,7 +36,7 @@ jobs:
       - name: Determine build parameters
         id: build_parameters
         run: |
-          version=$(jq '.version' apify.json)
+          version=$(jq -r '.version' apify.json)
           echo "::set-output name=version::$version"
       - name: Build actor
         uses: fjogeleit/http-request-action@master
