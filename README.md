@@ -24,7 +24,7 @@ console. You can also add other parameters supported by the
 endpoint to the URL, such as `timeout` and `memory`. Select events for which you
 would like to receive notifications. Update the default webhook payload template
 with `slackWebhookUrl` and optionally `slackWebhookArguments` to override
-the defaults:
+the defaults (see [default-webhook-args.json](default-webhook-args.json "Default arguments")):
 
     {
         "slackWebhookUrl": "https://hooks.slack.com/services/TXXXXX/BXXXXX/XXXXX",

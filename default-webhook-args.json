@@ -1,0 +1,55 @@
+{
+  "channel": "#notifications",
+  "username": "actor-slack-notification-webhook",
+  "iconUrl": "https://avatars.githubusercontent.com/u/24586296",
+  "text": "Apify ${eventType.split('.').map(v => v.replace(/_/g, ' ').toLowerCase()).join(' ')}",
+  "blocks": [
+    {
+      "type": "section",
+      "fields": [
+        {
+          "type": "mrkdwn",
+          "text": "*Actor ID:* <https://console.apify.com/actors/${actor.id}|${actor.id}>"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Actor name:* ${actor.name}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Task ID:* ${task ? '<https://console.apify.com/actors/tasks/${task.id}|${task.id}>' : '—'}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Task name:* ${task ? task.name : '—'}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Run ID:* <https://console.apify.com/actors/${actor.id}/runs/${eventData.actorRunId}|${eventData.actorRunId}>"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Status:* ${eventType.split('.').pop()}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Started:* ${resource.startedAt}"
+        },
+        {
+          "type": "mrkdwn",
+          "text": "*Finished:* ${resource.finishedAt || '—'}"
+        }
+      ]
+    },
+    {
+      "type": "section",
+      "text": {
+        "type": "mrkdwn",
+        "text": "*Log:*\n```${runLog.split('\\n').slice(-15).join('\\n')}```"
+      }
+    }
+  ],
+  "linkNames": true,
+  "unfurlLinks": false,
+  "unfurlMedia": false
+}

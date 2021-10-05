@@ -1,5 +1,7 @@
 const Apify = require("apify");
 const { IncomingWebhook } = require("@slack/webhook");
+const { readFileSync } = require("fs");
+const { defaults, mapKeys, snakeCase } = require("lodash");
 const { mapValuesDeep } = require("deepdash/standalone");
 const { log } = Apify.utils;
 
@@ -52,127 +54,16 @@ Apify.main(async () => {
     : null;
   const runLog = await apifyClient.log(eventData.actorRunId).get();
 
-  // Construct default arguments for sending the message.
-  const defaultArgs = {
-    channel: "#notifications",
-    username: "actor-slack-notification-webhook",
-    icon_url: "https://avatars.githubusercontent.com/u/24586296",
-    text: "Apify ${eventType.split('.').map(v => v.replace(/_/g, ' ').toLowerCase()).join(' ')}",
-    blocks: [
-      {
-        type: "section",
-        fields: [
-          {
-            type: "mrkdwn",
-            text: "*Actor ID:* <https://console.apify.com/actors/${actor.id}|${actor.id}>",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Actor name:* ${actor.name}",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Task ID:* ${task ? '<https://console.apify.com/actors/tasks/${task.id}|${task.id}>' : '—'}",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Task name:* ${task ? task.name : '—'}",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Run ID:* <https://console.apify.com/actors/${actor.id}/runs/${eventData.actorRunId}|${eventData.actorRunId}>",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Status:* ${eventType.split('.').pop()}",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Started:* ${resource.startedAt}",
-          },
-          {
-            type: "mrkdwn",
-            text: "*Finished:* ${resource.finishedAt || '—'}",
-          },
-        ],
-      },
-      {
-        type: "section",
-        text: {
-          type: "mrkdwn",
-          text: "*Log:*\n```${runLog.split('\\n').slice(-15).join('\\n')}```",
-        },
-      },
-    ],
-    link_names: true,
-    unfurl_links: false,
-    unfurl_media: false,
-  };
+  // Get default arguments for sending the message.
+  const defaultArgs = JSON.parse(
+    readFileSync(`${__dirname}/../default-webhook-args.json`),
+  );
 
-  // Merge the defaults with the input.
-  const mergedArgs = {
-    ...defaultArgs,
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "channel",
-    ) && {
-      channel: slackWebhookArguments.channel,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "username",
-    ) && {
-      username: slackWebhookArguments.username,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "iconEmoji",
-    ) && {
-      icon_emoji: slackWebhookArguments.iconEmoji,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "iconUrl",
-    ) && {
-      icon_url: slackWebhookArguments.iconUrl,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(slackWebhookArguments, "text") && {
-      text: slackWebhookArguments.text,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "blocks",
-    ) && {
-      blocks: slackWebhookArguments.blocks,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "attachments",
-    ) && {
-      attachments: slackWebhookArguments.attachments,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "linkNames",
-    ) && {
-      link_names: slackWebhookArguments.linkNames,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "unfurlLinks",
-    ) && {
-      unfurl_links: slackWebhookArguments.unfurlLinks,
-    }),
-    ...(Object.prototype.hasOwnProperty.call(
-      slackWebhookArguments,
-      "unfurlMedia",
-    ) && {
-      unfurl_media: slackWebhookArguments.unfurlMedia,
-    }),
-  };
+  // Merge input with the defaults.
+  const mergedArgs = defaults({}, slackWebhookArguments, defaultArgs);
 
-  // Interpolate the strings.
-  const args = mapValuesDeep(
+  // Interpolate string values.
+  const interpolatedArgs = mapValuesDeep(
     mergedArgs,
     (value) =>
       typeof value === "string"
@@ -190,6 +81,9 @@ Apify.main(async () => {
     { leavesOnly: true },
   );
 
+  // Convert argument keys to snake case.
+  const args = mapKeys(interpolatedArgs, (value, key) => snakeCase(key));
+
   // Send the Slack message.
   const slackWebhook = new IncomingWebhook(slackWebhookUrl);
   await slackWebhook
@@ -200,7 +94,7 @@ Apify.main(async () => {
     .catch((error) => {
       let message = `Failed to send Slack message: ${error.code}`;
       if (error.original?.response) {
-        message += `: ${error.original.response.data}`;
+        message = `${message}: ${error.original.response.data}`;
       }
       log.error(message);
       throw error;
