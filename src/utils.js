@@ -4,7 +4,7 @@
  * The string is interpolated as if it was a template literal but with only
  * the parameters available. Nested interpolation is also supported.
  */
-module.exports.interpolate = (string, params) => {
+export function interpolate(string, params) {
   const keys = Object.keys(params);
   const values = Object.values(params);
 
@@ -21,4 +21,4 @@ module.exports.interpolate = (string, params) => {
     result = _interpolate(input);
   } while (result !== input);
   return result;
-};
+}
