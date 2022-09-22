@@ -1,6 +1,6 @@
 {
   "name": "slack-notification-webhook",
-  "version": "0.0",
+  "version": "0.1",
   "buildTag": "latest",
   "env": {
     "APIFY_LOG_LEVEL": "DEBUG"

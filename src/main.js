@@ -1,78 +1,88 @@
-const Apify = require("apify");
-const { IncomingWebhook } = require("@slack/webhook");
-const { readFileSync } = require("fs");
-const { defaults, mapKeys, snakeCase } = require("lodash");
-const { mapValuesDeep } = require("deepdash/standalone");
-const { interpolate } = require("./utils");
-const { log } = Apify.utils;
+import { IncomingWebhook } from "@slack/webhook";
+import { Actor } from "apify";
+import { mapValuesDeep } from "deepdash/standalone";
+import { readFileSync } from "fs";
+import lodash from "lodash";
+import { dirname, resolve } from "path";
+import { fileURLToPath } from "url";
+import { interpolate } from "./utils.js";
+const { defaults, mapKeys, snakeCase } = lodash;
 
-Apify.main(async () => {
-  const {
-    userId,
-    createdAt,
-    eventType,
-    eventData,
-    resource,
-    slackWebhookUrl,
-    slackWebhookArguments = {},
-  } = await Apify.getInput();
+await Actor.init();
 
-  if (!slackWebhookUrl) {
-    throw new Error("Slack webhook URL is required");
-  }
+const {
+  userId,
+  createdAt,
+  eventType,
+  eventData,
+  resource,
+  slackWebhookUrl,
+  slackWebhookArguments = {},
+} = await Actor.getInput();
 
-  // Get actor/task objects and the run log.
-  const apifyClient = Apify.newClient();
+if (!slackWebhookUrl) {
+  throw new Error("Slack webhook URL is required");
+}
 
-  const actor = await apifyClient.actor(eventData.actorId).get();
-  const task = eventData.actorTaskId
-    ? await apifyClient.task(eventData.actorTaskId).get()
-    : null;
-  const runLog = await apifyClient.log(eventData.actorRunId).get();
+// Get actor/task objects and the run log.
+const apifyClient = Actor.newClient();
 
-  // Get default arguments for sending the message.
-  const defaultArgs = JSON.parse(
-    readFileSync(`${__dirname}/../default-webhook-args.json`),
-  );
+const actor = await apifyClient.actor(eventData.actorId).get();
+const task = eventData.actorTaskId
+  ? await apifyClient.task(eventData.actorTaskId).get()
+  : null;
+const runLog = await apifyClient.log(eventData.actorRunId).get();
 
-  // Merge input with the defaults.
-  const mergedArgs = defaults({}, slackWebhookArguments, defaultArgs);
+// Get default arguments for sending the message.
+const defaultArgs = JSON.parse(
+  readFileSync(
+    resolve(
+      dirname(fileURLToPath(import.meta.url)),
+      "../default-webhook-args.json",
+    ),
+    { encoding: "utf-8" },
+  ),
+);
 
-  // Interpolate string values.
-  const interpolatedArgs = mapValuesDeep(
-    mergedArgs,
-    (value) =>
-      typeof value === "string"
-        ? interpolate(value, {
-            userId,
-            createdAt,
-            eventType,
-            eventData,
-            resource,
-            actor,
-            task,
-            runLog,
-          })
-        : value,
-    { leavesOnly: true },
-  );
+// Merge input with the defaults.
+const mergedArgs = defaults({}, slackWebhookArguments, defaultArgs);
 
-  // Convert argument keys to snake case.
-  const args = mapKeys(interpolatedArgs, (value, key) => snakeCase(key));
+// Interpolate string values.
+const interpolatedArgs = mapValuesDeep(
+  mergedArgs,
+  (value) =>
+    typeof value === "string"
+      ? interpolate(value, {
+          userId,
+          createdAt,
+          eventType,
+          eventData,
+          resource,
+          actor,
+          task,
+          runLog,
+        })
+      : value,
+  { leavesOnly: true },
+);
 
-  // Send the Slack message.
-  const slackWebhook = new IncomingWebhook(slackWebhookUrl);
-  await slackWebhook
-    .send(args)
-    .then(() => {
-      log.info("Slack message sent successfully");
-    })
-    .catch((error) => {
-      let message = `Failed to send Slack message: ${error.code}`;
-      if (error.original?.response) {
-        message = `${message}: ${error.original.response.data}`;
-      }
-      log.error(message);
-      throw error;
-    });
-});
+// Convert argument keys to snake case.
+const args = mapKeys(interpolatedArgs, (value, key) => snakeCase(key));
+
+// Send the Slack message.
+const slackWebhook = new IncomingWebhook(slackWebhookUrl);
+await slackWebhook
+  .send(args)
+  .then(() => {
+    apifyClient.logger.info("Slack message sent successfully");
+  })
+  .catch((error) => {
+    let message = `Failed to send Slack message: ${error.code}`;
+    if (error.original?.response) {
+      message = `${message}: ${error.original.response.data}`;
+    }
+    apifyClient.logger.error(message);
+    throw error;
+  });
+
+await Actor.exit();
