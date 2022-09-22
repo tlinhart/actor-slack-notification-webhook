@@ -3,14 +3,10 @@
   "extends": [
     "config:js-app",
     "schedule:daily",
+    "docker:disable",
     ":enableVulnerabilityAlerts",
     ":maintainLockFilesWeekly",
+    "group:allNonMajor",
     ":automergeMinor"
-  ],
-  "packageRules": [
-    {
-      "matchPackagePatterns": "eslint",
-      "groupName": "eslint"
-    }
   ]
 }
