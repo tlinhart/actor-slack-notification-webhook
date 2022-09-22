@@ -11,7 +11,7 @@
     "eslint": "8.23.1",
     "eslint-config-prettier": "8.3.0",
     "eslint-plugin-prettier": "4.0.0",
-    "prettier": "2.4.1"
+    "prettier": "2.7.1"
   },
   "scripts": {
     "start": "node src/main.js",
