@@ -29,7 +29,7 @@ jobs:
         id: build_parameters
         run: |
           version=$(jq -r '.version' apify.json)
-          echo "::set-output name=version::$version"
+          echo "version=$version" >> $GITHUB_OUTPUT
       - name: Build actor
         uses: fjogeleit/http-request-action@master
         with:
