@@ -19,13 +19,13 @@
   "license": "MIT",
   "dependencies": {
     "@slack/webhook": "6.1.0",
-    "apify": "3.1.1",
+    "apify": "3.1.2",
     "deepdash": "5.3.9"
   },
   "devDependencies": {
     "eslint": "8.33.0",
     "eslint-config-prettier": "8.6.0",
     "eslint-plugin-prettier": "4.2.1",
-    "prettier": "2.8.3"
+    "prettier": "2.8.4"
   }
 }
