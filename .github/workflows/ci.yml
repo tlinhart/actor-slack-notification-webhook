@@ -8,7 +8,7 @@ jobs:
     name: Run tests
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set up Node
         uses: actions/setup-node@v3
         with:
@@ -24,7 +24,7 @@ jobs:
     if: ${{ !failure() && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Determine build parameters
         id: build_parameters
         run: |
