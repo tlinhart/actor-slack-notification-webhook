@@ -18,7 +18,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@slack/webhook": "7.0.1",
+    "@slack/webhook": "7.0.2",
     "apify": "3.1.14",
     "deepdash": "5.3.9"
   },
